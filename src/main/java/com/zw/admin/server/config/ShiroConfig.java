@@ -10,8 +10,11 @@ import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -19,8 +22,7 @@ import org.springframework.context.annotation.DependsOn;
 import com.zw.admin.server.constants.UserConstants;
 import com.zw.admin.server.filter.LogoutFilter;
 import com.zw.admin.server.filter.RestfulFilter;
-import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.core.RedisTemplate;
+
 
 /**
  * shiro配置
@@ -31,9 +33,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 @Configuration
 public class ShiroConfig {
 
-
-	@Autowired
-	private RedisCacheManager redisCacheManager;
 
 	@Bean
 	public ShiroFilterFactoryBean shirFilter(SecurityManager securityManager) {
@@ -69,6 +68,7 @@ public class ShiroConfig {
 		return shiroFilterFactoryBean;
 	}
 
+/*
     @Bean
 	public SecurityManager securityManager(EhCacheManager cacheManager) {
 		DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
@@ -77,8 +77,38 @@ public class ShiroConfig {
 
 		return securityManager;
 	}
+*/
+
+	@Value("${spring.redis.host}")
+	private String host;
+
+	@Value("${spring.redis.port}")
+	private int port;
 
 
+	@Bean
+	public RedisManager redisManager() {
+		RedisManager redisManager = new RedisManager();
+		redisManager.setHost("39.99.43.45");
+		redisManager.setPort(16379);
+		return redisManager;
+	}
+
+	@Bean
+	public RedisCacheManager redisCacheManager() {
+		RedisCacheManager cacheManager = new RedisCacheManager();
+		cacheManager.setRedisManager(redisManager());
+		return cacheManager;
+	}
+
+	@Bean
+	public SecurityManager securityManager(RedisCacheManager redisCacheManager) {
+		DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+		securityManager.setRealm(myShiroRealm());
+		securityManager.setCacheManager(redisCacheManager);
+		return securityManager;
+	}
+  //https://www.csdn.net/tags/NtTaUg1sNzIwMS1ibG9n.html
 
 	@Bean
 	public MyShiroRealm myShiroRealm() {
