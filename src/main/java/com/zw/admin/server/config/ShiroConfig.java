@@ -11,6 +11,7 @@ import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSource
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.DependsOn;
 import com.zw.admin.server.constants.UserConstants;
 import com.zw.admin.server.filter.LogoutFilter;
 import com.zw.admin.server.filter.RestfulFilter;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * shiro配置
@@ -27,6 +30,10 @@ import com.zw.admin.server.filter.RestfulFilter;
  */
 @Configuration
 public class ShiroConfig {
+
+
+	@Autowired
+	private RedisCacheManager redisCacheManager;
 
 	@Bean
 	public ShiroFilterFactoryBean shirFilter(SecurityManager securityManager) {
@@ -62,7 +69,7 @@ public class ShiroConfig {
 		return shiroFilterFactoryBean;
 	}
 
-	@Bean
+    @Bean
 	public SecurityManager securityManager(EhCacheManager cacheManager) {
 		DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
 		securityManager.setRealm(myShiroRealm());
@@ -70,6 +77,8 @@ public class ShiroConfig {
 
 		return securityManager;
 	}
+
+
 
 	@Bean
 	public MyShiroRealm myShiroRealm() {

@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  * @author
  *
  */
-//@Configuration
+@Configuration
 public class EhCacheConfig {
 
 	@Bean("ehCacheManager")
