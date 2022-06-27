@@ -13,6 +13,10 @@ import com.zw.admin.server.model.SysLogs;
 import com.zw.admin.server.service.SysLogService;
 
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 统一日志处理
@@ -33,6 +37,9 @@ public class LogAdvice {
 		SysLogs sysLogs = new SysLogs();
 		MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
 
+		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		HttpServletRequest request = (HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
+		String ip = request.getRemoteAddr();
 		String module = null;
 		LogAnnotation logAnnotation = methodSignature.getMethod().getDeclaredAnnotation(LogAnnotation.class);
 		module = logAnnotation.module();
@@ -44,7 +51,7 @@ public class LogAdvice {
 		}
 
 		if (StringUtils.isEmpty(module)) {
-			throw new RuntimeException("没有指定日志module");
+			throw new RuntimeException("没有指定日志module....");
 		}
 		sysLogs.setModule(module);
 
@@ -52,6 +59,7 @@ public class LogAdvice {
 			Object object = joinPoint.proceed();
 
 			sysLogs.setFlag(true);
+			sysLogs.setRemark((sysLogs.getRemark()==null?"":sysLogs.getRemark())+"请求ip:"+ip);
 			logService.save(sysLogs);
 
 			return object;
